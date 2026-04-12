@@ -1,0 +1,333 @@
+/* ── ManualPublic — mobile-first guest page ───────────────────────── */
+
+.mp {
+	max-width: 480px;
+	margin: 0 auto;
+	animation: mpFadeIn 0.4s ease;
+}
+
+@keyframes mpFadeIn {
+	from { opacity: 0; transform: translateY(8px); }
+	to   { opacity: 1; transform: none; }
+}
+
+/* ── Header ───────────────────────────────────────────────────────── */
+
+.mp-header {
+	padding-bottom: 0.5rem;
+}
+
+.mp-header__top {
+	text-align: center;
+	margin-bottom: 1.25rem;
+}
+
+.mp-header__title {
+	font-size: 1.5rem;
+	margin-bottom: 0.25rem;
+}
+
+.mp-header__address {
+	color: var(--text-muted);
+	font-size: 0.9rem;
+	margin: 0;
+}
+
+/* ── Quick-info cards ─────────────────────────────────────────────── */
+
+.mp-quickinfo {
+	display: flex;
+	flex-direction: column;
+	gap: 0.65rem;
+}
+
+.mp-quickinfo__card {
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	padding: 0.85rem 1rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.2rem;
+}
+
+.mp-quickinfo__label {
+	font-size: 0.75rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: var(--text-muted);
+}
+
+.mp-quickinfo__value {
+	font-weight: 600;
+	color: var(--text-heading);
+	font-size: 0.95rem;
+}
+
+.mp-quickinfo__value--big {
+	font-size: 1.35rem;
+	letter-spacing: -0.02em;
+}
+
+.mp-quickinfo__times {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 0.65rem;
+}
+
+/* ── Copy Wi-Fi button ────────────────────────────────────────────── */
+
+.mp-copy {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+	margin-top: 0.4rem;
+	padding: 0.45rem 0.85rem;
+	border-radius: 999px;
+	font: inherit;
+	font-size: 0.85rem;
+	font-weight: 600;
+	cursor: pointer;
+	border: 1px solid var(--border);
+	background: var(--surface-elevated);
+	color: var(--text-heading);
+	transition: background 0.15s ease, border-color 0.15s ease, transform 0.12s ease;
+}
+
+.mp-copy:active {
+	transform: scale(0.96);
+}
+
+.mp-copy:hover {
+	border-color: var(--accent);
+}
+
+.mp-copy--done {
+	background: var(--accent-soft);
+	border-color: var(--accent);
+	color: var(--accent-strong);
+}
+
+.mp-copy__icon {
+	font-size: 0.95rem;
+	line-height: 1;
+}
+
+/* ── Horizontal pill nav ──────────────────────────────────────────── */
+
+.mp-nav {
+	display: flex;
+	gap: 0.5rem;
+	padding: 1.25rem 0 0.75rem;
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
+	scrollbar-width: none;
+}
+
+.mp-nav::-webkit-scrollbar {
+	display: none;
+}
+
+.mp-nav__pill {
+	flex-shrink: 0;
+	display: inline-flex;
+	align-items: center;
+	gap: 0.3rem;
+	padding: 0.45rem 0.85rem;
+	border-radius: 999px;
+	background: var(--surface);
+	border: 1px solid var(--border);
+	font-size: 0.85rem;
+	font-weight: 500;
+	color: var(--text-heading);
+	text-decoration: none;
+	white-space: nowrap;
+	transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.mp-nav__pill:hover {
+	border-color: var(--accent);
+	box-shadow: 0 2px 8px rgba(13, 148, 136, 0.15);
+}
+
+.mp-nav__emoji {
+	font-size: 1rem;
+	line-height: 1;
+}
+
+/* ── Room accordion cards ─────────────────────────────────────────── */
+
+.mp-rooms {
+	display: flex;
+	flex-direction: column;
+	gap: 0.65rem;
+	padding-bottom: 1rem;
+}
+
+.mp-room {
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	overflow: hidden;
+	scroll-margin-top: 6rem;
+}
+
+.mp-room__toggle {
+	display: flex;
+	align-items: center;
+	gap: 0.65rem;
+	width: 100%;
+	padding: 0.95rem 1rem;
+	background: none;
+	border: none;
+	font: inherit;
+	cursor: pointer;
+	color: var(--text-heading);
+	text-align: left;
+}
+
+.mp-room__toggle:hover {
+	background: var(--surface-elevated);
+}
+
+.mp-room__emoji {
+	font-size: 1.35rem;
+	line-height: 1;
+	flex-shrink: 0;
+}
+
+.mp-room__title {
+	flex: 1;
+	font-weight: 600;
+	font-size: 1rem;
+}
+
+.mp-room__chevron {
+	font-size: 1.4rem;
+	line-height: 1;
+	color: var(--text-muted);
+	transform: rotate(0deg);
+	transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mp-room__chevron--open {
+	transform: rotate(90deg);
+}
+
+/* ── Collapsible panel ────────────────────────────────────────────── */
+
+.mp-room__panel {
+	max-height: 0;
+	overflow: hidden;
+	transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mp-room__content {
+	padding: 0 1rem 1rem;
+	display: flex;
+	flex-direction: column;
+	gap: 1.15rem;
+}
+
+/* ── Instruction block ────────────────────────────────────────────── */
+
+.mp-instruction {
+	border-top: 1px solid var(--border);
+	padding-top: 0.85rem;
+}
+
+.mp-instruction__heading {
+	font-size: 0.95rem;
+	font-weight: 600;
+	margin-bottom: 0.55rem;
+}
+
+/* ── Numbered steps ───────────────────────────────────────────────── */
+
+.mp-steps {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.55rem;
+}
+
+.mp-steps__item {
+	display: flex;
+	gap: 0.65rem;
+	align-items: flex-start;
+	font-size: 0.92rem;
+	line-height: 1.5;
+}
+
+.mp-steps__num {
+	flex-shrink: 0;
+	width: 1.55rem;
+	height: 1.55rem;
+	border-radius: 50%;
+	background: var(--accent-soft);
+	color: var(--accent-strong);
+	font-weight: 700;
+	font-size: 0.78rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin-top: 0.1rem;
+}
+
+/* ── Image placeholder ────────────────────────────────────────────── */
+
+.mp-imgplaceholder {
+	margin-top: 0.75rem;
+	min-height: 140px;
+	border-radius: var(--radius-sm);
+	border: 2px dashed var(--border);
+	background: var(--surface-elevated);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 0.3rem;
+	color: var(--text-muted);
+}
+
+.mp-imgplaceholder__icon {
+	font-size: 1.6rem;
+	opacity: 0.6;
+}
+
+.mp-imgplaceholder__text {
+	font-size: 0.78rem;
+}
+
+/* ── Footer ───────────────────────────────────────────────────────── */
+
+.mp-footer {
+	text-align: center;
+	padding: 1.25rem 0 0.5rem;
+	font-size: 0.82rem;
+	color: var(--text-muted);
+}
+
+.mp-footer strong {
+	color: var(--accent-strong);
+}
+
+/* ── Desktop lift ─────────────────────────────────────────────────── */
+
+@media (min-width: 600px) {
+	.mp {
+		max-width: 540px;
+		padding: 1rem 0;
+	}
+
+	.mp-room {
+		box-shadow: var(--shadow);
+	}
+
+	.mp-quickinfo__card {
+		box-shadow: var(--shadow);
+	}
+}
