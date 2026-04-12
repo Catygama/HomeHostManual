@@ -1,0 +1,49 @@
+// ============================================================================
+// HomeHost Manual - Azure Infrastructure (Bicep)
+// Deploy: az deployment sub create --location westeurope --template-file main.bicep
+// ============================================================================
+
+targetScope = 'subscription'
+
+@description('Nome do ambiente (dev, prod)')
+param environment string = 'dev'
+
+@description('Localização dos recursos Azure')
+param location string = 'westeurope'
+
+@description('Nome base do projeto')
+param projectName string = 'homehost'
+
+var resourceGroupName = 'rg-${projectName}-${environment}'
+var uniqueSuffix = uniqueString(resourceGroupName, subscription().subscriptionId)
+
+// ============================================================================
+// Resource Group
+// ============================================================================
+resource rg 'Microsoft.Resources/resourceGroups@2024-03-01' = {
+  name: resourceGroupName
+  location: location
+}
+
+// ============================================================================
+// Módulo com todos os recursos dentro do Resource Group
+// ============================================================================
+module resources 'resources.bicep' = {
+  scope: rg
+  name: 'homehost-resources'
+  params: {
+    location: location
+    projectName: projectName
+    environment: environment
+    uniqueSuffix: uniqueSuffix
+  }
+}
+
+// ============================================================================
+// Outputs
+// ============================================================================
+output resourceGroupName string = rg.name
+output appServiceUrl string = resources.outputs.appServiceUrl
+output functionAppUrl string = resources.outputs.functionAppUrl
+output cosmosDbEndpoint string = resources.outputs.cosmosDbEndpoint
+output storageAccountName string = resources.outputs.storageAccountName
