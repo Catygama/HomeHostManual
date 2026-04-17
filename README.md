@@ -5,19 +5,61 @@ Plataforma para anfitriões de alojamento local criarem e partilharem manuais di
 ## Stack
 
 - **Frontend**: React 19 + Vite (SPA)
-- **Backend**: Azure Functions (Node.js, ainda por implementar)
+- **Backend**: Azure Functions (Node.js) — provisionado, implementação em curso
 - **Base de dados**: Azure Cosmos DB (Serverless)
 - **Storage**: Azure Blob Storage (imagens)
-- **Hosting**: Azure App Service (Linux, Node 20)
+- **Hosting frontend**: Azure App Service (Linux, Node 20)
 - **IaC**: Bicep (`infra/`)
+- **CI/CD**: GitHub Actions (`.github/workflows/deploy.yml`)
+
+## Arquitetura
+
+```
+┌────────────────┐         ┌─────────────────┐
+│    Browser     │         │  App Insights   │◀─── telemetria de tudo
+│ (React SPA)    │         └─────────────────┘
+└───────┬────────┘
+        │ HTTPS
+        ▼
+┌────────────────┐         ┌─────────────────┐
+│  App Service   │         │  Function App   │
+│ (serve a SPA)  │         │ (API, Node 20)  │
+└────────────────┘         └────────┬────────┘
+                                    │
+                       ┌────────────┼────────────┐
+                       ▼            ▼            ▼
+                 ┌──────────┐ ┌──────────┐ ┌──────────┐
+                 │ Cosmos   │ │  Blob    │ │  …       │
+                 │   DB     │ │ Storage  │ │          │
+                 └──────────┘ └──────────┘ └──────────┘
+```
+
+### Componentes
+
+| Recurso | Papel |
+|---|---|
+| **App Service** | Serve o SPA estático (`pm2 serve --spa`). Sem lógica server-side. |
+| **Function App** | API HTTP — medeia acessos ao Cosmos e Blob Storage, autenticação. |
+| **Cosmos DB** | Base de dados NoSQL com 4 containers: `users`, `properties`, `manuals`, `analytics`. |
+| **Blob Storage** | Container `homehost-images` para fotos dos manuais (acesso público em leitura). |
+| **Application Insights** | Telemetria unificada de App Service + Function App. |
+| **Log Analytics** | Backing store do App Insights. |
+
+### Fluxo de pedidos
+
+**Estado atual** (temporário): o browser liga **diretamente** ao Cosmos DB e ao Blob Storage usando SDKs `@azure/cosmos` e `@azure/storage-blob`. As credenciais estão no bundle do frontend — inseguro, mas aceitável enquanto a API não está implementada.
+
+**Estado alvo**: todo o acesso a dados passa pelo Function App. O frontend só fala com `VITE_FUNCTION_URL` via HTTP e nenhuma credencial chega ao browser. Plano de migração detalhado em [`docs/plans/02-migrate-to-functions.md`](docs/plans/02-migrate-to-functions.md); plano de autenticação (Easy Auth) em [`docs/plans/01-easy-auth-microsoft.md`](docs/plans/01-easy-auth-microsoft.md).
 
 ## Estrutura do projeto
 
 ```
 .
-├── frontend/          # React + Vite (SPA)
-├── infra/             # Bicep (main.bicep + resources.bicep)
-└── package.json       # Scripts de deploy (root)
+├── frontend/                  # React + Vite (SPA)
+├── infra/                     # Bicep (main.bicep + resources.bicep)
+├── docs/plans/                # Planos de migração (auth, backend)
+├── .github/workflows/         # CI/CD
+└── package.json               # Scripts de deploy (root)
 ```
 
 ## Pré-requisitos
