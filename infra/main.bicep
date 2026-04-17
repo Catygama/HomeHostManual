@@ -48,4 +48,6 @@ output appServiceName string = resources.outputs.appServiceName
 output functionAppUrl string = resources.outputs.functionAppUrl
 output functionAppName string = resources.outputs.functionAppName
 output cosmosDbEndpoint string = resources.outputs.cosmosDbEndpoint
+output cosmosDbAccountName string = resources.outputs.cosmosDbAccountName
+output cosmosDbDatabaseName string = resources.outputs.cosmosDbDatabaseName
 output storageAccountName string = resources.outputs.storageAccountName

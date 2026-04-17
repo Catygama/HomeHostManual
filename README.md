@@ -134,6 +134,7 @@ Devolve as URLs/nomes dos recursos criados (App Service, Function App, Cosmos, S
 
 Depois do primeiro `deploy:infra`, corre `npm run outputs` e atualiza o `.env` com os valores devolvidos.
 
+No CI (GitHub Actions) o `.env` **não é committed** nem precisa de estar configurado como secrets: o workflow obtém dinamicamente o endpoint/chave do Cosmos e a connection string do Storage via `az cosmosdb keys list` e `az storage account show-connection-string`, e escreve o `frontend/.env` antes do `vite build`. O único secret necessário no repo é o `AZURE_CREDENTIALS`.
 > **Segurança**: expor `VITE_COSMOS_KEY` no bundle do browser dá controlo total à base de dados a quem abrir o DevTools. Em produção, mover as operações de Cosmos para o Function App e remover a chave do `.env`.
 
 ## CI/CD — GitHub Actions
@@ -165,8 +166,8 @@ Existe um workflow em `.github/workflows/deploy.yml` que faz deploy automático 
 
 | Job | O que faz |
 |---|---|
-| `deploy-infra` | `az deployment sub create` do `infra/main.bicep` e lê os outputs |
-| `deploy-frontend` | `npm ci` + `vite build` + zip + `az webapp deploy` para o App Service devolvido pelos outputs |
+| `deploy-infra` | `az deployment sub create` do `infra/main.bicep` e lê os outputs (nomes dos recursos) |
+| `deploy-frontend` | `az login` → obtém chave do Cosmos + connection string do Storage → gera `frontend/.env` → `npm ci` + `vite build` + zip + `az webapp deploy` |
 
 `deploy-frontend` depende do `deploy-infra` — se a infra falhar, o frontend não é publicado.
 

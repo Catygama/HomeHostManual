@@ -74,7 +74,7 @@ Ver [`docs/STATUS.md`](docs/STATUS.md) para o estado atual detalhado.
 | GHCR em vez de ACR | Zero custo, zero recurso Azure extra, imagem pública simples |
 | Easy Auth em vez de MSAL | Zero código de auth, plataforma trata da sessão |
 | Functions Consumption | Free tier cobre o workload, escala a zero |
-| `.env` committed no frontend | Pragmatismo assumido; será irrelevante após Plano 2 |
+| `.env` do frontend gerado no CI a partir da infra | Evita manter secrets em sync no GitHub; será irrelevante após Plano 2 |
 | App Service Linux B1 | Mais barato que S1, suficiente para 1 app |
 
 ---

@@ -353,4 +353,6 @@ output appServiceName string = appService.name
 output functionAppUrl string = 'https://${functionApp.properties.defaultHostName}'
 output functionAppName string = functionApp.name
 output cosmosDbEndpoint string = cosmosDb.properties.documentEndpoint
+output cosmosDbAccountName string = cosmosDb.name
+output cosmosDbDatabaseName string = cosmosDatabase.name
 output storageAccountName string = storageAccount.name
