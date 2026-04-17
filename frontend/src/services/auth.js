@@ -2,30 +2,11 @@ const FUNCTION_URL = import.meta.env.VITE_FUNCTION_URL
 
 export async function getUser() {
 	try {
-		const res = await fetch(`${FUNCTION_URL}/.auth/me`, { credentials: 'include' })
+		const res = await fetch(`${FUNCTION_URL}/api/me`, { credentials: 'include' })
 		if (!res.ok) return null
 		const data = await res.json()
-
-		if (data?.clientPrincipal) return data.clientPrincipal
-
-		if (Array.isArray(data) && data.length > 0) {
-			const entry = data[0]
-			const claims = Object.fromEntries(
-				(entry.user_claims ?? []).map((c) => [c.typ, c.val]),
-			)
-			return {
-				userId: entry.user_id,
-				userDetails:
-					claims['preferred_username'] ??
-					claims['email'] ??
-					claims['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] ??
-					entry.user_id,
-				identityProvider: entry.provider_name,
-				userRoles: entry.user_roles ?? [],
-			}
-		}
-
-		return null
+		if (!data?.authenticated) return null
+		return data
 	} catch {
 		return null
 	}

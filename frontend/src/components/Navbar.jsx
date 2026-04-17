@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { NavLink } from 'react-router-dom'
-import { getUser, loginUrl, logoutUrl } from '../services/auth'
+import { getUser, logoutUrl } from '../services/auth'
 import './Navbar.css'
 
 function Navbar() {
@@ -43,9 +43,9 @@ function Navbar() {
 							</a>
 						</>
 					) : (
-						<a href={loginUrl()} className="navbar__link">
-							Login com Microsoft
-						</a>
+						<NavLink to="/login" className="navbar__link">
+							Login
+						</NavLink>
 					)}
 				</nav>
 			</div>

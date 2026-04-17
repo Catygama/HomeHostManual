@@ -113,6 +113,29 @@ az webapp auth update \
 	--require-https true >/dev/null
 
 echo ""
+echo "==> Registar URLs permitidos para post-login redirect"
+APP_SERVICE_URL=$(az deployment sub show \
+	--name "$DEPLOYMENT_NAME" \
+	--query properties.outputs.appServiceUrl.value -o tsv)
+SUB_ID=$(az account show --query id -o tsv)
+AUTH_RES_ID="/subscriptions/${SUB_ID}/resourceGroups/${RG_NAME}/providers/Microsoft.Web/sites/${FUNC_APP_NAME}/config/authsettingsV2"
+ORIGINS=("${APP_SERVICE_URL}" "http://localhost:5173" "http://localhost:3000" "http://localhost:4173")
+PATHS=("" "/" "/dashboard")
+URLS_JSON="["
+for o in "${ORIGINS[@]}"; do
+	for p in "${PATHS[@]}"; do
+		URLS_JSON+="\"${o}${p}\","
+	done
+done
+URLS_JSON="${URLS_JSON%,}]"
+
+az resource update \
+	--ids "$AUTH_RES_ID" \
+	--set "properties.login.allowedExternalRedirectUrls=${URLS_JSON}" \
+	--query "properties.login.allowedExternalRedirectUrls" -o tsv >/dev/null
+echo "    $APP_SERVICE_URL + localhost:5173/3000/4173 (root, /, /dashboard)"
+
+echo ""
 echo "Easy Auth configurado com sucesso."
 echo ""
 echo "Testar em:"
