@@ -5,7 +5,7 @@ Plataforma para anfitriões de alojamento local criarem e partilharem manuais di
 ## Stack
 
 - **Frontend**: React 19 + Vite (SPA)
-- **Backend**: Azure Functions (Node.js) — `health`, `me`, API REST de **properties**, upsert/leitura de **manuals** + endpoints públicos. Chaves de Cosmos vivem só nas app settings do Function App.
+- **Backend**: Azure Functions (Node.js) — `health`, `me`, API REST de **properties**, upsert/leitura de **manuals**, endpoints públicos e `POST /api/uploads/sas` para uploads seguros para o Blob Storage. Chaves de Cosmos e Storage vivem só nas app settings do Function App.
 - **Base de dados**: Azure Cosmos DB (Serverless)
 - **Storage**: Azure Blob Storage (imagens)
 - **Hosting frontend**: Azure App Service (Linux, Node 20)
