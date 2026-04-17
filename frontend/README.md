@@ -4,8 +4,8 @@ React 19 + Vite. Em desenvolvimento: `npm run dev` → [http://localhost:5173](h
 
 ## Dados e API
 
-- **`VITE_FUNCTION_URL`**: Easy Auth (`/.auth/login/aad`), sessão com cookies, `GET /api/me`, REST de **propriedades** e **manuals** + endpoints públicos (`src/services/api.js`).
-- **Cosmos / Blob**: `cosmosdb.js` e `blobstorage.js` ainda existem mas deixaram de ser importados pelas páginas. Serão apagados nas fases 4–5 do Plano 2 (uploads via SAS + limpeza).
+- **`VITE_FUNCTION_URL`**: única env var. Easy Auth (`/.auth/login/aad`), sessão com cookies, `GET /api/me`, REST de **propriedades** e **manuals** + endpoints públicos (`src/services/api.js`).
+- Não há acesso direto a Cosmos nem Blob a partir do frontend — as chaves ficam nas app settings do Function App.
 
 Variáveis `VITE_*` vêm de `frontend/.env` em local; no CI são geradas no workflow antes do `vite build`.
 

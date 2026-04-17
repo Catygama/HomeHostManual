@@ -5,7 +5,7 @@ Plataforma para anfitriões de alojamento local criarem e partilharem manuais di
 ## Stack
 
 - **Frontend**: React 19 + Vite (SPA)
-- **Backend**: Azure Functions (Node.js) — `health`, `me`, API REST de **properties**, upsert/leitura de **manuals** + endpoints públicos (analytics/users ainda não portados)
+- **Backend**: Azure Functions (Node.js) — `health`, `me`, API REST de **properties**, upsert/leitura de **manuals** + endpoints públicos. Chaves de Cosmos vivem só nas app settings do Function App.
 - **Base de dados**: Azure Cosmos DB (Serverless)
 - **Storage**: Azure Blob Storage (imagens)
 - **Hosting frontend**: Azure App Service (Linux, Node 20)
@@ -47,9 +47,7 @@ Plataforma para anfitriões de alojamento local criarem e partilharem manuais di
 
 ### Fluxo de pedidos
 
-**Estado atual** (transição): o **dashboard de propriedades** usa o Function App (`VITE_FUNCTION_URL`, `credentials: 'include'`). Manuals, analytics e leituras públicas ainda usam `@azure/cosmos` no browser até às fases 3–5 do Plano 2. Blob continua com connection string no cliente até à fase SAS.
-
-**Estado alvo**: todo o acesso a dados passa pelo Function App. O frontend só fala com `VITE_FUNCTION_URL` via HTTP e nenhuma credencial chega ao browser. Plano de migração detalhado em [`docs/plans/02-migrate-to-functions.md`](docs/plans/02-migrate-to-functions.md); plano de autenticação (Easy Auth) em [`docs/plans/01-easy-auth-microsoft.md`](docs/plans/01-easy-auth-microsoft.md).
+O frontend só fala com `VITE_FUNCTION_URL` (Function App) via HTTP, com cookies da sessão Easy Auth. Nenhuma credencial de Cosmos ou Storage chega ao browser — ficam só nas app settings do Function App. Para upload de imagens falta implementar (`POST /api/uploads/sas`) — ver [`docs/plans/02-migrate-to-functions.md`](docs/plans/02-migrate-to-functions.md) Fase 4. Autenticação (Easy Auth) em [`docs/plans/01-easy-auth-microsoft.md`](docs/plans/01-easy-auth-microsoft.md).
 
 ## Estrutura do projeto
 
@@ -81,7 +79,7 @@ npm run install:frontend
 npm --prefix frontend run dev
 ```
 
-A app fica disponível em `http://localhost:5173`. O CORS do Function App, Cosmos DB e Blob Storage já está configurado para `localhost:5173`, `3000` e `4173`.
+A app fica disponível em `http://localhost:5173`. O CORS do Function App já está configurado para `localhost:5173`, `3000` e `4173`. Cosmos e Blob deixaram de ser acedidos do browser — não precisam de CORS no client-side (o Blob mantém CORS só para leitura pública de imagens, mas não é estritamente necessário para `<img src>`).
 
 ## Deploy
 
@@ -131,22 +129,15 @@ Devolve as URLs/nomes dos recursos criados (App Service, Function App, Cosmos, S
 
 ## Variáveis de ambiente (frontend)
 
-`frontend/.env` — são lidas pelo Vite em runtime:
+`frontend/.env` — lido pelo Vite em runtime:
 
 | Variável | Descrição |
 |---|---|
-| `VITE_COSMOS_ENDPOINT` | Endpoint do Cosmos DB |
-| `VITE_COSMOS_KEY` | Chave primária do Cosmos (ver nota de segurança) |
-| `VITE_COSMOS_DATABASE` | `homehostdb` |
-| `VITE_STORAGE_ACCOUNT` | Nome da storage account |
-| `VITE_STORAGE_CONNECTION_STRING` | Connection string do Blob Storage |
 | `VITE_FUNCTION_URL` | URL base do Function App (Easy Auth + `/api/me` + API `properties`/`manuals` + endpoints públicos) |
 
-Depois do primeiro `deploy:infra`, corre `npm run outputs` e atualiza o `.env` com os valores devolvidos.
+Depois do primeiro `deploy:infra`, corre `npm run outputs` e copia `functionAppUrl` para o `.env`. No CI o `.env` é escrito automaticamente a partir do output do Bicep antes do `vite build` — o único secret no GitHub é `AZURE_CREDENTIALS`.
 
-No CI (GitHub Actions) o `.env` **não é committed** nem precisa de estar configurado como secrets: o workflow obtém dinamicamente o endpoint/chave do Cosmos e a connection string do Storage via `az cosmosdb keys list` e `az storage account show-connection-string`, e escreve o `frontend/.env` antes do `vite build`. O único secret necessário no repo é o `AZURE_CREDENTIALS`.
-
-> **Segurança**: expor `VITE_COSMOS_KEY` no bundle do browser dá controlo total à base de dados a quem abrir o DevTools. Em produção, mover as operações de Cosmos para o Function App e remover a chave do `.env`.
+> O bundle do browser já não transporta nenhuma credencial do Cosmos ou do Storage — tudo passa pelo Function App.
 
 ## CI/CD — GitHub Actions
 
@@ -178,7 +169,7 @@ Existe um workflow em `.github/workflows/deploy.yml` que faz deploy da infraestr
 | Job | O que faz |
 |---|---|
 | `deploy-infra` | `az deployment sub create` do `infra/main.bicep` e lê os outputs (nomes dos recursos) |
-| `deploy-frontend` | `az login` → obtém chave do Cosmos + connection string do Storage → gera `frontend/.env` → `npm ci` + `vite build` + zip + `az webapp deploy` |
+| `deploy-frontend` | Gera `frontend/.env` com `VITE_FUNCTION_URL` → `npm ci` + `vite build` + zip + `az webapp deploy` |
 | `deploy-functions` | `npm ci` em `functions/` + `Azure/functions-action@v1` para publicar código no Function App |
 
 `deploy-frontend` e `deploy-functions` dependem do `deploy-infra`. Se a infra falhar, os outros jobs não correm.

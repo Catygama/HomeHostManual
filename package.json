@@ -11,10 +11,5 @@
 		"deploy": "npm run deploy:infra && npm run deploy:frontend",
 		"outputs": "az deployment sub show --name homehost-deploy --query properties.outputs",
 		"setup:auth": "bash scripts/setup-easy-auth.sh"
-	},
-	"dependencies": {
-		"@azure/cosmos": "^4.9.2",
-		"@azure/storage-blob": "^12.31.0",
-		"react-router-dom": "^7.14.0"
 	}
 }

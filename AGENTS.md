@@ -25,11 +25,11 @@ Ver [`docs/STATUS.md`](docs/STATUS.md) para o estado atual detalhado.
 │   ├── src/
 │   │   ├── pages/         # páginas da app
 │   │   ├── components/    # componentes reutilizáveis
-│   │   ├── services/      # auth.js, api.js (Functions), cosmosdb.js, blobstorage.js
+│   │   ├── services/      # auth.js, api.js (Functions)
 │   │   └── styles/
 │   ├── Dockerfile         # multi-stage: node build → nginx serve (ainda não usado no deploy)
 │   ├── nginx.conf         # SPA fallback config
-│   └── .env               # VITE_* (ATENÇÃO: commitado com chaves reais)
+│   └── .env               # só VITE_FUNCTION_URL (sem credenciais)
 │
 ├── infra/                 # Bicep (Infrastructure as Code)
 │   ├── main.bicep         # subscription scope: RG + módulo
@@ -74,7 +74,7 @@ Ver [`docs/STATUS.md`](docs/STATUS.md) para o estado atual detalhado.
 | GHCR em vez de ACR | Zero custo, zero recurso Azure extra, imagem pública simples |
 | Easy Auth em vez de MSAL | Zero código de auth, plataforma trata da sessão |
 | Functions Consumption | Free tier cobre o workload, escala a zero |
-| `.env` do frontend gerado no CI a partir da infra | Evita manter secrets em sync no GitHub; será irrelevante após Plano 2 |
+| `.env` do frontend gerado no CI com apenas `VITE_FUNCTION_URL` | As credenciais de Cosmos/Storage já não saem do Function App |
 | App Service Linux B1 | Mais barato que S1, suficiente para 1 app |
 
 ---
@@ -160,7 +160,7 @@ Atualiza a **data** no topo sempre que fizeres uma mudança significativa. Mant�
 ## O que NÃO fazer
 
 - **Não** correr comandos git (`commit`, `push`, `pull`) em nome do utilizador — só se for **explicitamente** pedido
-- **Não** rodar chaves Azure automaticamente sem aprovação (utilizador assumiu o risco do `.env` committed)
+- **Não** rodar chaves Azure automaticamente sem aprovação
 - **Não** criar recursos Azure fora do Bicep — tudo IaC
 - **Não** adicionar dependências sem justificação (este projeto quer continuar leve)
 - **Não** introduzir `any` / `as any` em TypeScript sem avisar

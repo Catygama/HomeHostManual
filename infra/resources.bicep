@@ -140,11 +140,6 @@ resource cosmosDb 'Microsoft.DocumentDB/databaseAccounts@2024-02-15-preview' = {
     consistencyPolicy: {
       defaultConsistencyLevel: 'Session'
     }
-    cors: [
-      {
-        allowedOrigins: join(allowedOrigins, ',')
-      }
-    ]
   }
 }
 
@@ -244,7 +239,7 @@ resource blobService 'Microsoft.Storage/storageAccounts/blobServices@2023-05-01'
       corsRules: [
         {
           allowedOrigins: allowedOrigins
-          allowedMethods: ['GET', 'HEAD', 'OPTIONS', 'PUT', 'POST', 'DELETE', 'MERGE']
+          allowedMethods: ['GET', 'HEAD', 'OPTIONS']
           allowedHeaders: ['*']
           exposedHeaders: ['*']
           maxAgeInSeconds: 3600

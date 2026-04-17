@@ -57,10 +57,6 @@ jobs:
     env:
       RESOURCE_GROUP: ${{ needs.deploy-infra.outputs.resourceGroupName }}
       APP_SERVICE_NAME: ${{ needs.deploy-infra.outputs.appServiceName }}
-      COSMOS_ENDPOINT: ${{ needs.deploy-infra.outputs.cosmosDbEndpoint }}
-      COSMOS_ACCOUNT: ${{ needs.deploy-infra.outputs.cosmosDbAccountName }}
-      COSMOS_DATABASE: ${{ needs.deploy-infra.outputs.cosmosDbDatabaseName }}
-      STORAGE_ACCOUNT: ${{ needs.deploy-infra.outputs.storageAccountName }}
       FUNCTION_URL: ${{ needs.deploy-infra.outputs.functionAppUrl }}
     steps:
       - uses: actions/checkout@v4
@@ -80,33 +76,10 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Fetch secrets from Azure
-        id: secrets
-        run: |
-          cosmos_key=$(az cosmosdb keys list \
-            --name "$COSMOS_ACCOUNT" \
-            --resource-group "$RESOURCE_GROUP" \
-            --query primaryMasterKey -o tsv)
-          storage_conn=$(az storage account show-connection-string \
-            --name "$STORAGE_ACCOUNT" \
-            --resource-group "$RESOURCE_GROUP" \
-            --query connectionString -o tsv)
-
-          echo "::add-mask::$cosmos_key"
-          echo "::add-mask::$storage_conn"
-
-          echo "cosmos_key=$cosmos_key" >> "$GITHUB_OUTPUT"
-          echo "storage_conn=$storage_conn" >> "$GITHUB_OUTPUT"
-
       - name: Write frontend/.env
         run: |
           cat > frontend/.env <<EOF
-          VITE_COSMOS_ENDPOINT=$COSMOS_ENDPOINT
-          VITE_COSMOS_KEY=${{ steps.secrets.outputs.cosmos_key }}
-          VITE_COSMOS_DATABASE=$COSMOS_DATABASE
-          VITE_STORAGE_ACCOUNT=$STORAGE_ACCOUNT
           VITE_FUNCTION_URL=$FUNCTION_URL
-          VITE_STORAGE_CONNECTION_STRING=${{ steps.secrets.outputs.storage_conn }}
           EOF
 
       - name: Build
