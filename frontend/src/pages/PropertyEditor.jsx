@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
-import { createProperty, getPropertyById, updateProperty } from '../services/cosmosdb'
-
-const USER_ID = 'user-test-001'
+import { api } from '../services/api'
 
 const EMPTY = {
 	name: '',
@@ -30,7 +28,7 @@ function PropertyEditor() {
 
 		async function fetchProperty() {
 			try {
-				const data = await getPropertyById(id, USER_ID)
+				const data = await api.properties.get(id)
 				if (!cancelled && data) {
 					setForm({
 						name: data.name ?? '',
@@ -67,13 +65,12 @@ function PropertyEditor() {
 		setError(null)
 		try {
 			if (isNew) {
-				await createProperty({
+				await api.properties.create({
 					id: crypto.randomUUID(),
 					...form,
-					userId: USER_ID,
 				})
 			} else {
-				await updateProperty(id, USER_ID, form)
+				await api.properties.update(id, form)
 			}
 			navigate('/dashboard')
 		} catch (err) {

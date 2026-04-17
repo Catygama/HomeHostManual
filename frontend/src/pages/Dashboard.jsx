@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { getPropertiesByUserId, deleteProperty } from '../services/cosmosdb'
-
-const USER_ID = 'user-test-001'
+import { api } from '../services/api'
 
 function Dashboard() {
 	const [properties, setProperties] = useState([])
@@ -17,7 +15,7 @@ function Dashboard() {
 			try {
 				setLoading(true)
 				setError(null)
-				const result = await getPropertiesByUserId(USER_ID)
+				const result = await api.properties.list()
 				if (!cancelled) {
 					setProperties(result)
 					setLoading(false)
@@ -39,7 +37,7 @@ function Dashboard() {
 	const handleDelete = async (id) => {
 		if (!confirm('Apagar esta propriedade?')) return
 		try {
-			await deleteProperty(id, USER_ID)
+			await api.properties.delete(id)
 			setProperties((prev) => prev.filter((p) => p.id !== id))
 		} catch (err) {
 			alert(`Erro ao apagar: ${err.message}`)

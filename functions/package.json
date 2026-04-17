@@ -4,12 +4,13 @@
 	"description": "Azure Functions (Node.js v4) para o HomeHost Manual",
 	"private": true,
 	"type": "module",
-	"main": "src/**/*.js",
+	"main": "src/index.js",
 	"scripts": {
 		"start": "func start",
 		"test": "echo \"no tests yet\" && exit 0"
 	},
 	"dependencies": {
+		"@azure/cosmos": "^4.2.0",
 		"@azure/functions": "^4.5.1"
 	},
 	"engines": {

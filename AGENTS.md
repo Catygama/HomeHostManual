@@ -25,7 +25,7 @@ Ver [`docs/STATUS.md`](docs/STATUS.md) para o estado atual detalhado.
 │   ├── src/
 │   │   ├── pages/         # páginas da app
 │   │   ├── components/    # componentes reutilizáveis
-│   │   ├── services/      # acesso a dados (cosmosdb.js, blobstorage.js, functions.js)
+│   │   ├── services/      # auth.js, api.js (Functions), cosmosdb.js, blobstorage.js
 │   │   └── styles/
 │   ├── Dockerfile         # multi-stage: node build → nginx serve (ainda não usado no deploy)
 │   ├── nginx.conf         # SPA fallback config
@@ -35,7 +35,7 @@ Ver [`docs/STATUS.md`](docs/STATUS.md) para o estado atual detalhado.
 │   ├── main.bicep         # subscription scope: RG + módulo
 │   └── resources.bicep    # todos os recursos Azure
 │
-├── functions/             # Azure Functions (AINDA NÃO CRIADO — Plano 2)
+├── functions/             # Azure Functions (Node v4): health, me, properties API; mais endpoints no Plano 2
 │
 ├── docs/
 │   ├── STATUS.md          # estado do projeto, divergências, próximos passos
@@ -45,7 +45,7 @@ Ver [`docs/STATUS.md`](docs/STATUS.md) para o estado atual detalhado.
 │       └── 03-docker-ghcr.md
 │
 ├── .github/workflows/
-│   └── deploy.yml         # CI/CD (2 jobs: infra + frontend)
+│   └── deploy.yml         # CI/CD: infra + frontend + functions
 │
 ├── package.json           # scripts de deploy da raiz (deploy, deploy:infra, deploy:frontend, outputs)
 ├── README.md              # docs operacionais (deploy, env vars, CI/CD, arquitetura)
@@ -58,13 +58,13 @@ Ver [`docs/STATUS.md`](docs/STATUS.md) para o estado atual detalhado.
 ## Stack e decisões já tomadas
 
 - **Frontend**: React 19 + Vite, SPA. Servido via App Service (Linux, Node 20) com `pm2 serve --spa`.
-- **Backend**: Azure Functions (Node.js, Consumption Plan). **Provisionado mas sem código** — migração planeada no Plano 2.
+- **Backend**: Azure Functions (Node.js, Consumption Plan). Código: `health`, `me`, CRUD `properties`; restantes domínios no Plano 2.
 - **Base de dados**: Cosmos DB serverless, 4 containers (`users`, `properties`, `manuals`, `analytics`).
 - **Storage**: Blob Storage, container `homehost-images` com leitura pública.
 - **Monitorização**: Application Insights + Log Analytics.
 - **IaC**: Bicep (scope: subscription → module com Resource Group).
 - **CI/CD**: GitHub Actions, autenticação via Service Principal (`AZURE_CREDENTIALS` secret).
-- **Auth** (planeada): Easy Auth no Function App, provider Microsoft — Plano 1.
+- **Auth**: Easy Auth no Function App (Microsoft); `GET /api/me` no código — Plano 1 feito.
 - **Docker** (planeado): GHCR como registry, App Service em modo container — Plano 3.
 
 ### Escolhas que já discutimos e porquê
@@ -84,7 +84,7 @@ Ver [`docs/STATUS.md`](docs/STATUS.md) para o estado atual detalhado.
 - Textos em PT-PT quando estão para o utilizador/relatório; inglês apenas em código e identificadores
 - Bicep com `@description` nos params principais, organização em secções com comentários `// ============`
 - Bicep: todos os parâmetros vêm de `main.bicep` → `resources.bicep` via module
-- GitHub Actions jobs nomeados por o que fazem (`deploy-infra`, `deploy-frontend`), não por tecnologia
+- GitHub Actions jobs nomeados por o que fazem (`deploy-infra`, `deploy-frontend`, `deploy-functions`), não por tecnologia
 
 ---
 
@@ -188,6 +188,6 @@ Entregas avaliativas:
 1. [`enunciado.txt`](enunciado.txt) — requisitos obrigatórios da UC
 2. [`docs/STATUS.md`](docs/STATUS.md) — onde estamos hoje
 3. [`README.md`](README.md) — como a infra está montada e como fazer deploy
-4. Planos em `docs/plans/` pela ordem: 3 → 1 → 2
+4. Planos em `docs/plans/`: Plano 1 (auth) feito; seguir Plano 2 (migração API) e depois Plano 3 (Docker)
 
 VAI ATUALIZANDO FICHEIROS MD QUANDO NECESSARIO

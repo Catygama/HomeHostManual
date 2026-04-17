@@ -5,7 +5,7 @@ Plataforma para anfitriões de alojamento local criarem e partilharem manuais di
 ## Stack
 
 - **Frontend**: React 19 + Vite (SPA)
-- **Backend**: Azure Functions (Node.js) — provisionado, implementação em curso
+- **Backend**: Azure Functions (Node.js) — `health`, `me`, API REST de **properties** (manuals/analytics ainda no Cosmos via frontend)
 - **Base de dados**: Azure Cosmos DB (Serverless)
 - **Storage**: Azure Blob Storage (imagens)
 - **Hosting frontend**: Azure App Service (Linux, Node 20)
@@ -47,7 +47,7 @@ Plataforma para anfitriões de alojamento local criarem e partilharem manuais di
 
 ### Fluxo de pedidos
 
-**Estado atual** (temporário): o browser liga **diretamente** ao Cosmos DB e ao Blob Storage usando SDKs `@azure/cosmos` e `@azure/storage-blob`. As credenciais estão no bundle do frontend — inseguro, mas aceitável enquanto a API não está implementada.
+**Estado atual** (transição): o **dashboard de propriedades** usa o Function App (`VITE_FUNCTION_URL`, `credentials: 'include'`). Manuals, analytics e leituras públicas ainda usam `@azure/cosmos` no browser até às fases 3–5 do Plano 2. Blob continua com connection string no cliente até à fase SAS.
 
 **Estado alvo**: todo o acesso a dados passa pelo Function App. O frontend só fala com `VITE_FUNCTION_URL` via HTTP e nenhuma credencial chega ao browser. Plano de migração detalhado em [`docs/plans/02-migrate-to-functions.md`](docs/plans/02-migrate-to-functions.md); plano de autenticação (Easy Auth) em [`docs/plans/01-easy-auth-microsoft.md`](docs/plans/01-easy-auth-microsoft.md).
 
@@ -93,6 +93,8 @@ Todos os comandos correm a partir da raiz do repositório.
 npm run deploy
 ```
 
+Não inclui o código das Azure Functions; o CI em `main` corre também o job `deploy-functions`. Para publicar só as Functions, usa o workflow ou `func azure functionapp publish` com o nome do Function App (`npm run outputs`).
+
 ### 2. Apenas a infraestrutura (Bicep)
 
 ```bash
@@ -130,7 +132,7 @@ Devolve as URLs/nomes dos recursos criados (App Service, Function App, Cosmos, S
 | `VITE_COSMOS_DATABASE` | `homehostdb` |
 | `VITE_STORAGE_ACCOUNT` | Nome da storage account |
 | `VITE_STORAGE_CONNECTION_STRING` | Connection string do Blob Storage |
-| `VITE_FUNCTION_URL` | URL base do Function App |
+| `VITE_FUNCTION_URL` | URL base do Function App (auth Easy Auth + `/api/me` + API `properties`) |
 
 Depois do primeiro `deploy:infra`, corre `npm run outputs` e atualiza o `.env` com os valores devolvidos.
 
@@ -140,7 +142,7 @@ No CI (GitHub Actions) o `.env` **não é committed** nem precisa de estar confi
 
 ## CI/CD — GitHub Actions
 
-Existe um workflow em `.github/workflows/deploy.yml` que faz deploy automático da infraestrutura e do frontend sempre que há um push para `main` (também pode ser corrido manualmente via **Actions → Deploy → Run workflow**).
+Existe um workflow em `.github/workflows/deploy.yml` que faz deploy da infraestrutura, do frontend e das Functions em cada push para `main` (ou **Actions → Deploy → Run workflow**).
 
 ### Setup (uma vez)
 
@@ -169,8 +171,9 @@ Existe um workflow em `.github/workflows/deploy.yml` que faz deploy automático 
 |---|---|
 | `deploy-infra` | `az deployment sub create` do `infra/main.bicep` e lê os outputs (nomes dos recursos) |
 | `deploy-frontend` | `az login` → obtém chave do Cosmos + connection string do Storage → gera `frontend/.env` → `npm ci` + `vite build` + zip + `az webapp deploy` |
+| `deploy-functions` | `npm ci` em `functions/` + `Azure/functions-action@v1` para publicar código no Function App |
 
-`deploy-frontend` depende do `deploy-infra` — se a infra falhar, o frontend não é publicado.
+`deploy-frontend` e `deploy-functions` dependem do `deploy-infra`. Se a infra falhar, os outros jobs não correm.
 
 ## Parâmetros do Bicep
 
