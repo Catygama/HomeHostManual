@@ -47,7 +47,7 @@ Plataforma para anfitriões de alojamento local criarem e partilharem manuais di
 
 ### Fluxo de pedidos
 
-O frontend só fala com `VITE_FUNCTION_URL` (Function App) via HTTP, com cookies da sessão Easy Auth. Nenhuma credencial de Cosmos ou Storage chega ao browser — ficam só nas app settings do Function App. Para upload de imagens falta implementar (`POST /api/uploads/sas`) — ver [`docs/plans/02-migrate-to-functions.md`](docs/plans/02-migrate-to-functions.md) Fase 4. Autenticação (Easy Auth) em [`docs/plans/01-easy-auth-microsoft.md`](docs/plans/01-easy-auth-microsoft.md).
+O frontend só fala com `VITE_FUNCTION_URL` (Function App) via HTTP, com cookies da sessão Easy Auth. Nenhuma credencial de Cosmos ou Storage chega ao browser. Para upload de imagens o frontend pede um SAS token a `POST /api/uploads/sas` e faz o `PUT` direto ao blob — a chave do Storage fica só no Function App. Autenticação (Easy Auth) em [`docs/plans/01-easy-auth-microsoft.md`](docs/plans/01-easy-auth-microsoft.md); migração para Functions em [`docs/plans/02-migrate-to-functions.md`](docs/plans/02-migrate-to-functions.md).
 
 ## Estrutura do projeto
 
