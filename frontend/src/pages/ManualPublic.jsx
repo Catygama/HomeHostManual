@@ -92,6 +92,13 @@ function ManualPublic() {
 		<div className="mp">
 			{property && (
 				<header className="mp-header">
+					{property.coverImageUrl && (
+						<img
+							src={property.coverImageUrl}
+							alt={property.name}
+							className="mp-header__cover"
+						/>
+					)}
 					<div className="mp-header__top">
 						<h1 className="mp-header__title">{property.name}</h1>
 						<p className="mp-header__address">{property.address}</p>
@@ -189,8 +196,16 @@ function ManualPublic() {
 												: '0px',
 										}}
 									>
-										<div className="mp-room__content">
-											{(room.instructions ?? []).map((inst, idx) => (
+									<div className="mp-room__content">
+										{room.imageUrl && (
+											<img
+												src={room.imageUrl}
+												alt={room.name}
+												className="mp-room__image"
+												loading="lazy"
+											/>
+										)}
+										{(room.instructions ?? []).map((inst, idx) => (
 												<div key={inst.id ?? idx} className="mp-instruction">
 													<h3 className="mp-instruction__heading">{inst.heading}</h3>
 													<ol className="mp-steps">

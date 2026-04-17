@@ -63,4 +63,11 @@ export const api = {
 				method: 'GET',
 			}),
 	},
+	uploads: {
+		getSas: ({ filename, contentType }) =>
+			request('/uploads/sas', {
+				method: 'POST',
+				body: JSON.stringify({ filename, contentType }),
+			}),
+	},
 }

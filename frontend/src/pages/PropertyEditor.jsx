@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import { api } from '../services/api'
+import ImageUpload from '../components/ImageUpload'
 
 const EMPTY = {
 	name: '',
@@ -10,6 +11,7 @@ const EMPTY = {
 	wifiPassword: '',
 	checkin: '',
 	checkout: '',
+	coverImageUrl: '',
 }
 
 function PropertyEditor() {
@@ -38,6 +40,7 @@ function PropertyEditor() {
 						wifiPassword: data.wifiPassword ?? '',
 						checkin: data.checkin ?? '',
 						checkout: data.checkout ?? '',
+						coverImageUrl: data.coverImageUrl ?? '',
 					})
 					setLoading(false)
 				}
@@ -88,6 +91,15 @@ function PropertyEditor() {
 			{error && <p className="error-msg">{error}</p>}
 
 			<form className="form-card" onSubmit={handleSubmit}>
+				<div className="field">
+					<span className="field__label">Imagem de capa</span>
+					<ImageUpload
+						value={form.coverImageUrl || null}
+						onChange={(url) => setForm((prev) => ({ ...prev, coverImageUrl: url ?? '' }))}
+						label="imagem de capa"
+						aspect="16/9"
+					/>
+				</div>
 				<label className="field">
 					<span className="field__label">Nome</span>
 					<input

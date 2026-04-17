@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { api } from '../services/api'
+import ImageUpload from '../components/ImageUpload'
 
 const EMOJI_OPTIONS = ['🍳', '🛋️', '🛏️', '🚿', 'ℹ️', '🏠', '🅿️', '🌿', '🏊', '🧺']
 
@@ -9,6 +10,7 @@ function emptyRoom() {
 		id: crypto.randomUUID(),
 		name: '',
 		icon: '🏠',
+		imageUrl: '',
 		instructions: [],
 	}
 }
@@ -37,6 +39,7 @@ function ManualEditor() {
 						manual.rooms.map((r) => ({
 							...r,
 							id: r.id ?? crypto.randomUUID(),
+							imageUrl: r.imageUrl ?? '',
 							instructions: (r.instructions ?? []).map((inst) => ({
 								...inst,
 								id: inst.id ?? crypto.randomUUID(),
@@ -65,10 +68,11 @@ function ManualEditor() {
 		setSaved(false)
 		try {
 			const payload = {
-				rooms: rooms.map(({ id: rid, name, icon, instructions }) => ({
+				rooms: rooms.map(({ id: rid, name, icon, imageUrl, instructions }) => ({
 					id: rid,
 					name,
 					icon,
+					imageUrl: imageUrl || null,
 					instructions: instructions.map(({ id: iid, heading, steps }) => ({
 						id: iid,
 						heading,
@@ -197,6 +201,15 @@ function ManualEditor() {
 							>
 								Remover
 							</button>
+						</div>
+
+						<div className="me-room__image">
+							<ImageUpload
+								value={room.imageUrl || null}
+								onChange={(url) => updateRoom(ri, 'imageUrl', url ?? '')}
+								label={`imagem de ${room.name || 'divisão'}`}
+								aspect="4/3"
+							/>
 						</div>
 
 						<div className="me-instructions">
