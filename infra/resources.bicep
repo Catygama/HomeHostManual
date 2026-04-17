@@ -16,6 +16,14 @@ var storageAccountName = 'st${projectName}${take(uniqueSuffix, 10)}'
 var appInsightsName = 'ai-${projectName}-${environment}'
 var logAnalyticsName = 'log-${projectName}-${environment}'
 
+// Origens permitidas para CORS (localhost do Vite + App Service em produção)
+var allowedOrigins = [
+	'http://localhost:5173'
+	'http://localhost:3000'
+	'http://localhost:4173'
+	'https://${appServiceName}.azurewebsites.net'
+]
+
 // ============================================================================
 // 1. Log Analytics Workspace (necessário para Application Insights)
 // ============================================================================
@@ -69,6 +77,11 @@ resource appService 'Microsoft.Web/sites@2023-12-01' = {
     serverFarmId: appServicePlan.id
     siteConfig: {
       linuxFxVersion: 'NODE|20-lts'
+      appCommandLine: 'pm2 serve /home/site/wwwroot --no-daemon --spa'
+      cors: {
+        allowedOrigins: allowedOrigins
+        supportCredentials: false
+      }
       appSettings: [
         {
           name: 'COSMOS_DB_ENDPOINT'
@@ -89,6 +102,14 @@ resource appService 'Microsoft.Web/sites@2023-12-01' = {
         {
           name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
           value: appInsights.properties.ConnectionString
+        }
+        {
+          name: 'SCM_DO_BUILD_DURING_DEPLOYMENT'
+          value: 'false'
+        }
+        {
+          name: 'WEBSITE_RUN_FROM_PACKAGE'
+          value: '0'
         }
       ]
     }
@@ -119,6 +140,11 @@ resource cosmosDb 'Microsoft.DocumentDB/databaseAccounts@2024-02-15-preview' = {
     consistencyPolicy: {
       defaultConsistencyLevel: 'Session'
     }
+    cors: [
+      {
+        allowedOrigins: join(allowedOrigins, ',')
+      }
+    ]
   }
 }
 
@@ -213,6 +239,19 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' = {
 resource blobService 'Microsoft.Storage/storageAccounts/blobServices@2023-05-01' = {
   parent: storageAccount
   name: 'default'
+  properties: {
+    cors: {
+      corsRules: [
+        {
+          allowedOrigins: allowedOrigins
+          allowedMethods: ['GET', 'HEAD', 'OPTIONS', 'PUT', 'POST', 'DELETE', 'MERGE']
+          allowedHeaders: ['*']
+          exposedHeaders: ['*']
+          maxAgeInSeconds: 3600
+        }
+      ]
+    }
+  }
 }
 
 resource imagesContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2023-05-01' = {
@@ -259,6 +298,10 @@ resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
     serverFarmId: functionAppPlan.id
     siteConfig: {
       netFrameworkVersion: 'v8.0'
+      cors: {
+        allowedOrigins: allowedOrigins
+        supportCredentials: false
+      }
       appSettings: [
         {
           name: 'AzureWebJobsStorage'
@@ -306,6 +349,8 @@ resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
 // Outputs
 // ============================================================================
 output appServiceUrl string = 'https://${appService.properties.defaultHostName}'
+output appServiceName string = appService.name
 output functionAppUrl string = 'https://${functionApp.properties.defaultHostName}'
+output functionAppName string = functionApp.name
 output cosmosDbEndpoint string = cosmosDb.properties.documentEndpoint
 output storageAccountName string = storageAccount.name

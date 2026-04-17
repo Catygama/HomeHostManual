@@ -44,6 +44,8 @@ module resources 'resources.bicep' = {
 // ============================================================================
 output resourceGroupName string = rg.name
 output appServiceUrl string = resources.outputs.appServiceUrl
+output appServiceName string = resources.outputs.appServiceName
 output functionAppUrl string = resources.outputs.functionAppUrl
+output functionAppName string = resources.outputs.functionAppName
 output cosmosDbEndpoint string = resources.outputs.cosmosDbEndpoint
 output storageAccountName string = resources.outputs.storageAccountName
