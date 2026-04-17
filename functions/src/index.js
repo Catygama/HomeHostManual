@@ -1,3 +1,5 @@
 import './health.js'
 import './me.js'
 import './properties.js'
+import './manuals.js'
+import './public.js'

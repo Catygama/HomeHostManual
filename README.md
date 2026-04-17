@@ -5,7 +5,7 @@ Plataforma para anfitriões de alojamento local criarem e partilharem manuais di
 ## Stack
 
 - **Frontend**: React 19 + Vite (SPA)
-- **Backend**: Azure Functions (Node.js) — `health`, `me`, API REST de **properties** (manuals/analytics ainda no Cosmos via frontend)
+- **Backend**: Azure Functions (Node.js) — `health`, `me`, API REST de **properties**, upsert/leitura de **manuals** + endpoints públicos (analytics/users ainda não portados)
 - **Base de dados**: Azure Cosmos DB (Serverless)
 - **Storage**: Azure Blob Storage (imagens)
 - **Hosting frontend**: Azure App Service (Linux, Node 20)
@@ -140,7 +140,7 @@ Devolve as URLs/nomes dos recursos criados (App Service, Function App, Cosmos, S
 | `VITE_COSMOS_DATABASE` | `homehostdb` |
 | `VITE_STORAGE_ACCOUNT` | Nome da storage account |
 | `VITE_STORAGE_CONNECTION_STRING` | Connection string do Blob Storage |
-| `VITE_FUNCTION_URL` | URL base do Function App (auth Easy Auth + `/api/me` + API `properties`) |
+| `VITE_FUNCTION_URL` | URL base do Function App (Easy Auth + `/api/me` + API `properties`/`manuals` + endpoints públicos) |
 
 Depois do primeiro `deploy:infra`, corre `npm run outputs` e atualiza o `.env` com os valores devolvidos.
 

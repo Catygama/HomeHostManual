@@ -1,10 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import {
-	getManualByPropertyId,
-	createManual,
-	updateManual,
-} from '../services/cosmosdb'
+import { api } from '../services/api'
 
 const EMOJI_OPTIONS = ['🍳', '🛋️', '🛏️', '🚿', 'ℹ️', '🏠', '🅿️', '🌿', '🏊', '🧺']
 
@@ -23,7 +19,6 @@ function emptyInstruction() {
 
 function ManualEditor() {
 	const { id: propertyId } = useParams()
-	const [manualId, setManualId] = useState(null)
 	const [rooms, setRooms] = useState([])
 	const [loading, setLoading] = useState(true)
 	const [saving, setSaving] = useState(false)
@@ -35,10 +30,9 @@ function ManualEditor() {
 
 		async function fetchManual() {
 			try {
-				const manual = await getManualByPropertyId(propertyId)
+				const manual = await api.manuals.getForProperty(propertyId)
 				if (cancelled) return
 				if (manual) {
-					setManualId(manual.id)
 					setRooms(
 						manual.rooms.map((r) => ({
 							...r,
@@ -82,13 +76,7 @@ function ManualEditor() {
 					})),
 				})),
 			}
-			if (manualId) {
-				await updateManual(manualId, propertyId, payload)
-			} else {
-				const newId = crypto.randomUUID()
-				await createManual({ id: newId, propertyId, ...payload })
-				setManualId(newId)
-			}
+			await api.manuals.upsert(propertyId, payload)
 			setSaved(true)
 			setTimeout(() => setSaved(false), 2500)
 		} catch (err) {
@@ -96,7 +84,7 @@ function ManualEditor() {
 		} finally {
 			setSaving(false)
 		}
-	}, [rooms, manualId, propertyId])
+	}, [rooms, propertyId])
 
 	const addRoom = () => setRooms((prev) => [...prev, emptyRoom()])
 

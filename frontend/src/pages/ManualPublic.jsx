@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams } from 'react-router-dom'
-import { getManualByPropertyId, getPropertyByIdPublic } from '../services/cosmosdb'
+import { api } from '../services/api'
 import './ManualPublic.css'
 
 const DEFAULT_ICONS = {
@@ -34,8 +34,8 @@ function ManualPublic() {
 		async function fetchData() {
 			try {
 				const [manual, prop] = await Promise.all([
-					getManualByPropertyId(propertyId),
-					getPropertyByIdPublic(propertyId),
+					api.public.getManual(propertyId),
+					api.public.getProperty(propertyId),
 				])
 				if (cancelled) return
 				if (prop) setProperty(prop)

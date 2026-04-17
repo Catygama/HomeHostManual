@@ -15,6 +15,7 @@ async function request(path, opts = {}) {
 
 	const text = await res.text()
 	if (!res.ok) {
+		if (res.status === 404) return null
 		let msg = text
 		try {
 			const j = JSON.parse(text)
@@ -42,5 +43,24 @@ export const api = {
 			}),
 		delete: (id) =>
 			request(`/properties/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+	},
+	manuals: {
+		getForProperty: (propertyId) =>
+			request(`/properties/${encodeURIComponent(propertyId)}/manual`, {
+				method: 'GET',
+			}),
+		upsert: (propertyId, payload) =>
+			request(`/properties/${encodeURIComponent(propertyId)}/manual`, {
+				method: 'PUT',
+				body: JSON.stringify(payload),
+			}),
+	},
+	public: {
+		getProperty: (id) =>
+			request(`/public/properties/${encodeURIComponent(id)}`, { method: 'GET' }),
+		getManual: (propertyId) =>
+			request(`/public/properties/${encodeURIComponent(propertyId)}/manual`, {
+				method: 'GET',
+			}),
 	},
 }
