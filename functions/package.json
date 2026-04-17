@@ -1,0 +1,18 @@
+{
+	"name": "homehost-functions",
+	"version": "1.0.0",
+	"description": "Azure Functions (Node.js v4) para o HomeHost Manual",
+	"private": true,
+	"type": "module",
+	"main": "src/**/*.js",
+	"scripts": {
+		"start": "func start",
+		"test": "echo \"no tests yet\" && exit 0"
+	},
+	"dependencies": {
+		"@azure/functions": "^4.5.1"
+	},
+	"engines": {
+		"node": ">=20"
+	}
+}
