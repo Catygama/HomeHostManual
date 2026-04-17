@@ -1,8 +1,0 @@
-node_modules
-local.settings.json
-.funcignore
-.git
-.gitignore
-.vscode
-.DS_Store
-*.log

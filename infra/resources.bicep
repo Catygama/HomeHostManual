@@ -300,7 +300,7 @@ resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
       netFrameworkVersion: 'v8.0'
       cors: {
         allowedOrigins: allowedOrigins
-        supportCredentials: true
+        supportCredentials: false
       }
       appSettings: [
         {
@@ -314,14 +314,6 @@ resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
         {
           name: 'FUNCTIONS_WORKER_RUNTIME'
           value: 'node'
-        }
-        {
-          name: 'WEBSITE_NODE_DEFAULT_VERSION'
-          value: '~20'
-        }
-        {
-          name: 'AzureWebJobsFeatureFlags'
-          value: 'EnableWorkerIndexing'
         }
         {
           name: 'COSMOS_DB_ENDPOINT'

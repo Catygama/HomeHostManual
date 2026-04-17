@@ -139,8 +139,3 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 frontend/dist.zip
 .DS_Store
-
-# Azure Functions
-functions/local.settings.json
-functions/bin
-functions/obj

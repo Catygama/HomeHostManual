@@ -8,8 +8,7 @@
 		"deploy:infra": "az deployment sub create --location westeurope --name homehost-deploy --template-file infra/main.bicep",
 		"deploy:frontend": "npm run build:frontend && cd frontend/dist && zip -r ../dist.zip . -x '*.DS_Store' && cd .. && az webapp deploy --resource-group $(az deployment sub show --name homehost-deploy --query properties.outputs.resourceGroupName.value -o tsv) --name $(az deployment sub show --name homehost-deploy --query properties.outputs.appServiceName.value -o tsv) --src-path dist.zip --type zip",
 		"deploy": "npm run deploy:infra && npm run deploy:frontend",
-		"outputs": "az deployment sub show --name homehost-deploy --query properties.outputs",
-		"setup:auth": "bash scripts/setup-easy-auth.sh"
+		"outputs": "az deployment sub show --name homehost-deploy --query properties.outputs"
 	},
 	"dependencies": {
 		"@azure/cosmos": "^4.9.2",
