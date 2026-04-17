@@ -5,7 +5,8 @@ React 19 + Vite. Em desenvolvimento: `npm run dev` → [http://localhost:5173](h
 ## Dados e API
 
 - **`VITE_FUNCTION_URL`**: única env var. Easy Auth (`/.auth/login/aad`), sessão com cookies, `GET /api/me`, REST de **propriedades** e **manuals** + endpoints públicos (`src/services/api.js`).
-- Não há acesso direto a Cosmos nem Blob a partir do frontend — as chaves ficam nas app settings do Function App.
+- Upload de imagens: `src/services/uploads.js` pede SAS a `POST /api/uploads/sas` e faz `PUT` direto ao Blob. Componente `<ImageUpload>` em `src/components/ImageUpload.jsx`.
+- Não há acesso direto a Cosmos nem Blob (para leitura/escrita com chave) a partir do frontend — as chaves ficam nas app settings do Function App.
 
 Variáveis `VITE_*` vêm de `frontend/.env` em local; no CI são geradas no workflow antes do `vite build`.
 
