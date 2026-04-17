@@ -15,9 +15,6 @@ function Home() {
 					<Link to="/login" className="btn btn--primary">
 						Entrar
 					</Link>
-					<Link to="/register" className="btn btn--secondary">
-						Criar conta
-					</Link>
 				</div>
 			</div>
 		</section>

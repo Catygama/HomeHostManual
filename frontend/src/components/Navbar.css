@@ -56,3 +56,9 @@
 	background: var(--accent-soft);
 	font-weight: 550;
 }
+
+.navbar__user {
+	padding: 0.45rem 0.85rem;
+	font-size: 0.9rem;
+	color: var(--text-heading);
+}
