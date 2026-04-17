@@ -8,6 +8,12 @@ function unauthorized() {
 	return { status: 401, jsonBody: { error: 'Unauthorized' } }
 }
 
+function requireUser(request) {
+	const user = getAuthUser(request)
+	if (!user?.userId) return null
+	return user
+}
+
 function notFound() {
 	return { status: 404, jsonBody: { error: 'Not found' } }
 }
@@ -17,7 +23,7 @@ app.http('properties-list', {
 	methods: ['GET'],
 	authLevel: 'anonymous',
 	handler: async (request) => {
-		const user = getAuthUser(request)
+		const user = requireUser(request)
 		if (!user) return unauthorized()
 
 		const { resources } = await container().items
@@ -36,7 +42,7 @@ app.http('properties-create', {
 	methods: ['POST'],
 	authLevel: 'anonymous',
 	handler: async (request) => {
-		const user = getAuthUser(request)
+		const user = requireUser(request)
 		if (!user) return unauthorized()
 
 		let body
@@ -70,7 +76,7 @@ app.http('properties-get', {
 	methods: ['GET'],
 	authLevel: 'anonymous',
 	handler: async (request) => {
-		const user = getAuthUser(request)
+		const user = requireUser(request)
 		if (!user) return unauthorized()
 
 		const { id } = request.params
@@ -89,7 +95,7 @@ app.http('properties-patch', {
 	methods: ['PATCH'],
 	authLevel: 'anonymous',
 	handler: async (request) => {
-		const user = getAuthUser(request)
+		const user = requireUser(request)
 		if (!user) return unauthorized()
 
 		const { id } = request.params
@@ -123,7 +129,7 @@ app.http('properties-delete', {
 	methods: ['DELETE'],
 	authLevel: 'anonymous',
 	handler: async (request) => {
-		const user = getAuthUser(request)
+		const user = requireUser(request)
 		if (!user) return unauthorized()
 
 		const { id } = request.params

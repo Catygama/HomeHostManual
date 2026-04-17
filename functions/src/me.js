@@ -12,6 +12,7 @@ app.http('me', {
 			return { status: 401, jsonBody: { authenticated: false } }
 		}
 
-		return { jsonBody: { authenticated: true, ...user } }
+		const { claims: _claims, ...publicUser } = user
+		return { jsonBody: { authenticated: true, ...publicUser } }
 	},
 })

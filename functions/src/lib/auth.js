@@ -9,7 +9,13 @@ function parseClientPrincipal(header) {
 		)
 
 		return {
-			userId: principal.userId ?? claims.sub ?? null,
+			userId:
+				principal.userId ??
+				claims.oid ??
+				claims['http://schemas.microsoft.com/identity/claims/objectidentifier'] ??
+				claims.sub ??
+				claims['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] ??
+				null,
 			userDetails:
 				principal.userDetails ??
 				claims.preferred_username ??
@@ -23,6 +29,7 @@ function parseClientPrincipal(header) {
 				claims.name ??
 				claims['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] ??
 				null,
+			claims,
 		}
 	} catch {
 		return null
@@ -31,7 +38,5 @@ function parseClientPrincipal(header) {
 
 export function getAuthUser(request) {
 	const header = request.headers.get('x-ms-client-principal')
-	const user = parseClientPrincipal(header)
-	if (!user?.userId) return null
-	return user
+	return parseClientPrincipal(header)
 }

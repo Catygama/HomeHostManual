@@ -47,7 +47,7 @@ Ver [`docs/STATUS.md`](docs/STATUS.md) para o estado atual detalhado.
 ├── .github/workflows/
 │   └── deploy.yml         # CI/CD: infra + frontend + functions
 │
-├── package.json           # scripts de deploy da raiz (deploy, deploy:infra, deploy:frontend, outputs)
+├── package.json           # scripts de deploy da raiz (deploy, deploy:infra, deploy:frontend, deploy:functions, outputs)
 ├── README.md              # docs operacionais (deploy, env vars, CI/CD, arquitetura)
 ├── enunciado.txt          # requisitos da unidade curricular
 └── Relatório_MiniProjeto_CN_pdf.pdf
@@ -107,6 +107,7 @@ Subscription: `<subscription-id>` (IPCB).
 npm run deploy            # infra + frontend
 npm run deploy:infra      # só Bicep
 npm run deploy:frontend   # só frontend
+npm run deploy:functions  # só código Azure Functions (zip + az)
 npm run outputs           # ver URLs/nomes dos recursos
 npm --prefix frontend run dev   # dev server local (http://localhost:5173)
 ```

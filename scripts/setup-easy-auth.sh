@@ -96,12 +96,23 @@ az webapp auth config-version upgrade \
 	--resource-group "$RG_NAME" >/dev/null 2>&1 || echo "    (já em v2 ou upgrade desnecessário)"
 
 echo ""
+echo "==> Garantir MICROSOFT_PROVIDER_AUTHENTICATION_SECRET nos app settings"
+# O Bicep gere os app settings do Function App e pode fazer overwrite deste
+# valor num redeploy. Forçamos a escrita aqui para que a rotação do secret
+# fique sempre reflectida no Function App.
+az functionapp config appsettings set \
+	--name "$FUNC_APP_NAME" \
+	--resource-group "$RG_NAME" \
+	--settings "MICROSOFT_PROVIDER_AUTHENTICATION_SECRET=$CLIENT_SECRET" \
+	--output none
+
+echo ""
 echo "==> Configurar authsettingsV2 no Function App"
 az webapp auth microsoft update \
 	--name "$FUNC_APP_NAME" \
 	--resource-group "$RG_NAME" \
 	--client-id "$APP_ID" \
-	--client-secret "$CLIENT_SECRET" \
+	--client-secret-setting-name "MICROSOFT_PROVIDER_AUTHENTICATION_SECRET" \
 	--issuer "https://login.microsoftonline.com/common/v2.0" \
 	--yes >/dev/null
 

@@ -93,9 +93,17 @@ Todos os comandos correm a partir da raiz do repositório.
 npm run deploy
 ```
 
-Não inclui o código das Azure Functions; o CI em `main` corre também o job `deploy-functions`. Para publicar só as Functions, usa o workflow ou `func azure functionapp publish` com o nome do Function App (`npm run outputs`).
+Não inclui o código das Azure Functions; o CI em `main` corre também o job `deploy-functions`.
 
-### 2. Apenas a infraestrutura (Bicep)
+### 2. Apenas as Azure Functions
+
+```bash
+npm run deploy:functions
+```
+
+Faz `npm ci` em `functions/`, cria um zip (com `node_modules`) e publica com `az functionapp deployment source config-zip`, usando os nomes do deployment `homehost-deploy` (igual ao `deploy:frontend`). Remove o `func-deploy.zip` no fim se o deploy tiver sucesso. Requer `az login` e `zip` (macOS/Linux).
+
+### 3. Apenas a infraestrutura (Bicep)
 
 ```bash
 npm run deploy:infra
@@ -103,9 +111,9 @@ npm run deploy:infra
 
 Cria/atualiza o Resource Group `rg-homehost-dev` e todos os recursos: App Service Plan, App Service, Function App, Cosmos DB, Storage Account, Application Insights e Log Analytics.
 
-O deployment é guardado no nome `homehost-deploy` à escala da subscription — usado pelo `deploy:frontend` para descobrir dinamicamente o nome do App Service.
+O deployment é guardado no nome `homehost-deploy` à escala da subscription — usado pelo `deploy:frontend`, `deploy:functions` e `outputs` para descobrir nomes dos recursos.
 
-### 3. Apenas o frontend
+### 4. Apenas o frontend
 
 ```bash
 npm run deploy:frontend
@@ -113,7 +121,7 @@ npm run deploy:frontend
 
 Faz `vite build`, empacota `frontend/dist/` num `dist.zip` e publica-o no App Service via `az webapp deploy`. O App Service serve a SPA com `pm2 serve --spa` (startup command já definido no Bicep).
 
-### 4. Consultar outputs do deployment
+### 5. Consultar outputs do deployment
 
 ```bash
 npm run outputs
