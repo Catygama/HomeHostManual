@@ -7,7 +7,7 @@ param projectName string
 param environment string
 param uniqueSuffix string
 
-@description('Localização do ACR + Container Apps Env + Container App (separada da `location` porque westeurope esteve em AKSCapacityHeavyUsage)')
+@description('Localização do Container Apps Env + Container App (separada da `location` porque westeurope esteve em AKSCapacityHeavyUsage). O ACR fica em `location`.')
 param containerAppsLocation string
 
 @description('Imagem Docker do serviço de PDF (com tag); injetada via main.bicep')
@@ -366,7 +366,7 @@ resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
 // ============================================================================
 resource containerRegistry 'Microsoft.ContainerRegistry/registries@2023-11-01-preview' = {
   name: containerRegistryName
-  location: containerAppsLocation
+  location: location
   sku: {
     name: 'Basic'
   }

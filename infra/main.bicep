@@ -11,7 +11,7 @@ param environment string = 'dev'
 @description('Localização dos recursos Azure')
 param location string = 'westeurope'
 
-@description('Localização dos recursos de Container Apps (ACR + Container Apps Env + Container App). Separada porque westeurope esteve em AKSCapacityHeavyUsage; northeurope é o fallback regional mais próximo.')
+@description('Localização do Container Apps Env + Container App. Separada porque westeurope esteve em AKSCapacityHeavyUsage; northeurope é o fallback regional mais próximo. (ACR continua em `location` para não colidir com o recurso já criado.)')
 param containerAppsLocation string = 'northeurope'
 
 @description('Nome base do projeto')
