@@ -54,7 +54,8 @@
 }
 
 @media print {
-	.mp-header__actions { display: none; }
+	.mp-header__actions,
+	.mp-nav { display: none; }
 }
 
 .mp-header__cover {
