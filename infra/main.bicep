@@ -11,6 +11,9 @@ param environment string = 'dev'
 @description('Localização dos recursos Azure')
 param location string = 'westeurope'
 
+@description('Localização dos recursos de Container Apps (ACR + Container Apps Env + Container App). Separada porque westeurope esteve em AKSCapacityHeavyUsage; northeurope é o fallback regional mais próximo.')
+param containerAppsLocation string = 'northeurope'
+
 @description('Nome base do projeto')
 param projectName string = 'homehost'
 
@@ -36,6 +39,7 @@ module resources 'resources.bicep' = {
   name: 'homehost-resources'
   params: {
     location: location
+    containerAppsLocation: containerAppsLocation
     projectName: projectName
     environment: environment
     uniqueSuffix: uniqueSuffix

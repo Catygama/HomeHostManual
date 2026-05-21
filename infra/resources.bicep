@@ -7,6 +7,9 @@ param projectName string
 param environment string
 param uniqueSuffix string
 
+@description('Localização do ACR + Container Apps Env + Container App (separada da `location` porque westeurope esteve em AKSCapacityHeavyUsage)')
+param containerAppsLocation string
+
 @description('Imagem Docker do serviço de PDF (com tag); injetada via main.bicep')
 param pdfContainerImage string
 
@@ -363,7 +366,7 @@ resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
 // ============================================================================
 resource containerRegistry 'Microsoft.ContainerRegistry/registries@2023-11-01-preview' = {
   name: containerRegistryName
-  location: location
+  location: containerAppsLocation
   sku: {
     name: 'Basic'
   }
@@ -377,7 +380,7 @@ resource containerRegistry 'Microsoft.ContainerRegistry/registries@2023-11-01-pr
 // ============================================================================
 resource containerAppsEnv 'Microsoft.App/managedEnvironments@2024-03-01' = {
   name: containerAppsEnvName
-  location: location
+  location: containerAppsLocation
   properties: {
     appLogsConfiguration: {
       destination: 'log-analytics'
@@ -395,7 +398,7 @@ resource containerAppsEnv 'Microsoft.App/managedEnvironments@2024-03-01' = {
 // ============================================================================
 resource pdfContainerApp 'Microsoft.App/containerApps@2024-03-01' = {
   name: pdfContainerAppName
-  location: location
+  location: containerAppsLocation
   properties: {
     managedEnvironmentId: containerAppsEnv.id
     configuration: {
