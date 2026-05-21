@@ -27,25 +27,30 @@ Ver [`docs/STATUS.md`](docs/STATUS.md) para o estado atual detalhado.
 │   │   ├── components/    # componentes reutilizáveis
 │   │   ├── services/      # auth.js, api.js (Functions)
 │   │   └── styles/
-│   ├── Dockerfile         # multi-stage: node build → nginx serve (ainda não usado no deploy)
+│   ├── dockerfile         # (legacy) multi-stage node → nginx; não usado no deploy do frontend
 │   ├── nginx.conf         # SPA fallback config
 │   └── .env               # só VITE_FUNCTION_URL (sem credenciais)
 │
+├── pdf-service/           # Container Node + Express + Puppeteer
+│   ├── server.js          # POST /pdf → goto(<frontend>/manual/:id) + page.pdf()
+│   ├── Dockerfile         # node:20-bookworm-slim + chromium apt
+│   └── package.json       # express + puppeteer-core
+│
 ├── infra/                 # Bicep (Infrastructure as Code)
 │   ├── main.bicep         # subscription scope: RG + módulo
-│   └── resources.bicep    # todos os recursos Azure
+│   └── resources.bicep    # todos os recursos Azure (incl. ACR + Container Apps)
 │
-├── functions/             # Azure Functions (Node v4): health, me, properties API; mais endpoints no Plano 2
+├── functions/             # Azure Functions (Node v4): health, me, properties, manuals, uploads, public, pdf (proxy)
 │
 ├── docs/
 │   ├── STATUS.md          # estado do projeto, divergências, próximos passos
 │   └── plans/             # planos de implementação
 │       ├── 01-easy-auth-microsoft.md
 │       ├── 02-migrate-to-functions.md
-│       └── 03-docker-ghcr.md
+│       └── 03-docker-acr-pdf.md   # substituiu 03-docker-ghcr.md
 │
 ├── .github/workflows/
-│   └── deploy.yml         # CI/CD: infra + frontend + functions
+│   └── deploy.yml         # CI/CD: infra + frontend + functions + build-and-push-pdf + deploy-pdf-service
 │
 ├── package.json           # scripts de deploy da raiz (deploy, deploy:infra, deploy:frontend, deploy:functions, outputs)
 ├── README.md              # docs operacionais (deploy, env vars, CI/CD, arquitetura)
@@ -57,25 +62,30 @@ Ver [`docs/STATUS.md`](docs/STATUS.md) para o estado atual detalhado.
 
 ## Stack e decisões já tomadas
 
-- **Frontend**: React 19 + Vite, SPA. Servido via App Service (Linux, Node 20) com `pm2 serve --spa`.
-- **Backend**: Azure Functions (Node.js, Consumption Plan). Código: `health`, `me`, CRUD `properties`; restantes domínios no Plano 2.
+- **Frontend**: React 19 + Vite, SPA. Servido via App Service (Linux, Node 20) com `pm2 serve --spa` (zip deploy — **não** containerizado).
+- **Backend**: Azure Functions (Node.js, Consumption Plan). Código: `health`, `me`, CRUD `properties`, `manuals`, `uploads/sas`, `public/*`, `manuals/{id}/pdf` (proxy para o Container App).
+- **Serviço de PDF**: container Node + Express + Puppeteer em Azure Container Apps (scale-to-zero); imagem em Azure Container Registry privado (Basic).
 - **Base de dados**: Cosmos DB serverless, 4 containers (`users`, `properties`, `manuals`, `analytics`).
 - **Storage**: Blob Storage, container `homehost-images` com leitura pública.
-- **Monitorização**: Application Insights + Log Analytics.
+- **Monitorização**: Application Insights + Log Analytics (este último também recebe os logs do Container Apps Environment).
 - **IaC**: Bicep (scope: subscription → module com Resource Group).
-- **CI/CD**: GitHub Actions, autenticação via Service Principal (`AZURE_CREDENTIALS` secret).
+- **CI/CD**: GitHub Actions, autenticação via Service Principal (`AZURE_CREDENTIALS` secret); reaproveitado para `az acr login`.
 - **Auth**: Easy Auth no Function App (Microsoft); `GET /api/me` no código — Plano 1 feito.
-- **Docker** (planeado): GHCR como registry, App Service em modo container — Plano 3.
+- **Docker**: feito via **ACR + Container Apps** para o `pdf-service` (Plano 3 concluído). Frontend mantém-se zip-deploy.
 
 ### Escolhas que já discutimos e porquê
 
 | Decisão | Razão |
 |---|---|
-| GHCR em vez de ACR | Zero custo, zero recurso Azure extra, imagem pública simples |
+| **ACR + Container Apps** (em vez de GHCR + App Service container) | Container Apps escala-a-zero (custo idle = €0), ACR conta como recurso Azure adicional valorizado pelo enunciado, mantém imagens privadas sem PATs |
+| Container só para o `pdf-service`, frontend mantém zip-deploy | Frontend não justifica o overhead de container; o requisito "≥ 1 Docker" passa a ser cumprido pelo PDF |
+| Puppeteer (HTML → PDF) em vez de pdfkit | Reusa a página pública `/manual/:id` como SSOT do layout; alterações ao manual refletem-se no PDF sem código novo |
+| Function App faz proxy para o Container App | Centraliza CORS/auth, esconde a URL do Container App, e permite cache no futuro |
 | Easy Auth em vez de MSAL | Zero código de auth, plataforma trata da sessão |
 | Functions Consumption | Free tier cobre o workload, escala a zero |
 | `.env` do frontend gerado no CI com apenas `VITE_FUNCTION_URL` | As credenciais de Cosmos/Storage já não saem do Function App |
 | App Service Linux B1 | Mais barato que S1, suficiente para 1 app |
+| ACR Basic + admin user enabled | Mais simples que managed identity + AcrPull role; aceitável para projeto académico |
 
 ---
 
@@ -94,6 +104,9 @@ Ver [`docs/STATUS.md`](docs/STATUS.md) para o estado atual detalhado.
 - **Function App**: `func-homehost-dev-upe3xlftudhes` → https://func-homehost-dev-upe3xlftudhes.azurewebsites.net
 - **Cosmos DB**: `cosmos-homehost-dev-upe3xlftudhes`
 - **Storage Account**: `sthomehostupe3xlftud` (+ `stfunchomehost<suffix>` para o Function App)
+- **Container Registry**: `acrhomehost<suffix>` (Basic, admin enabled)
+- **Container Apps Environment**: `cae-homehost-dev`
+- **Container App (PDF)**: `ca-pdf-dev-<suffix>` — FQDN publicado como output `pdfServiceUrl` do Bicep
 - **Resource Group**: `rg-homehost-dev`
 - **Região**: `westeurope`
 
@@ -110,6 +123,12 @@ npm run deploy:frontend   # só frontend
 npm run deploy:functions  # só código Azure Functions (zip + az)
 npm run outputs           # ver URLs/nomes dos recursos
 npm --prefix frontend run dev   # dev server local (http://localhost:5173)
+
+# pdf-service — build + push + update (não há npm script; ver README §5)
+docker build pdf-service -t <acr>/pdf-service:<tag>
+az acr login --name <acr-name>
+docker push <acr>/pdf-service:<tag>
+az containerapp update --resource-group rg-homehost-dev --name <ca-pdf-...> --image <acr>/pdf-service:<tag>
 ```
 
 Deploy automático: push para `main` dispara `.github/workflows/deploy.yml`.
@@ -166,7 +185,8 @@ Atualiza a **data** no topo sempre que fizeres uma mudança significativa. Mant�
 - **Não** introduzir `any` / `as any` em TypeScript sem avisar
 - **Não** fazer deploy manual (`az ...` ou `npm run deploy`) sem o utilizador pedir; o CI faz isso em push a `main`
 - **Não** sugerir migrar para outras plataformas (Static Web Apps, Supabase, Vercel) sem razão forte — decisão de ficar em Azure+Functions já foi tomada
-- **Não** apagar o `Dockerfile` nem o `nginx.conf` (vão ser usados no Plano 3)
+- **Não** apagar `frontend/dockerfile` nem `frontend/nginx.conf` (legacy do Plano 3 GHCR; podem ser usados se um dia decidirmos containerizar o frontend)
+- **Não** introduzir alterações ao `pdf-service` que dependam de Chromium >127 sem testar — a imagem usa o Chromium do apt do Debian Bookworm, com versão fixa pela distro
 
 ---
 

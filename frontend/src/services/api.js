@@ -54,6 +54,8 @@ export const api = {
 				method: 'PUT',
 				body: JSON.stringify(payload),
 			}),
+		pdfUrl: (propertyId) =>
+			`${base}/api/manuals/${encodeURIComponent(propertyId)}/pdf`,
 	},
 	public: {
 		getProperty: (id) =>

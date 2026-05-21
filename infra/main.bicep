@@ -14,6 +14,9 @@ param location string = 'westeurope'
 @description('Nome base do projeto')
 param projectName string = 'homehost'
 
+@description('Imagem Docker do serviço de PDF (ex: acrhomehost<suffix>.azurecr.io/pdf-service:<sha>). Default = helloworld; o workflow atualiza-a no deploy.')
+param pdfContainerImage string = 'mcr.microsoft.com/azuredocs/containerapps-helloworld:latest'
+
 var resourceGroupName = 'rg-${projectName}-${environment}'
 var uniqueSuffix = uniqueString(resourceGroupName, subscription().subscriptionId)
 
@@ -36,6 +39,7 @@ module resources 'resources.bicep' = {
     projectName: projectName
     environment: environment
     uniqueSuffix: uniqueSuffix
+    pdfContainerImage: pdfContainerImage
   }
 }
 
@@ -51,3 +55,7 @@ output cosmosDbEndpoint string = resources.outputs.cosmosDbEndpoint
 output cosmosDbAccountName string = resources.outputs.cosmosDbAccountName
 output cosmosDbDatabaseName string = resources.outputs.cosmosDbDatabaseName
 output storageAccountName string = resources.outputs.storageAccountName
+output containerRegistryName string = resources.outputs.containerRegistryName
+output containerRegistryLoginServer string = resources.outputs.containerRegistryLoginServer
+output pdfContainerAppName string = resources.outputs.pdfContainerAppName
+output pdfServiceUrl string = resources.outputs.pdfServiceUrl

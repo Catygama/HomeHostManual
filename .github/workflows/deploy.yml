@@ -22,6 +22,10 @@ jobs:
       storageAccountName: ${{ steps.outputs.outputs.storageAccountName }}
       functionAppUrl: ${{ steps.outputs.outputs.functionAppUrl }}
       functionAppName: ${{ steps.outputs.outputs.functionAppName }}
+      containerRegistryName: ${{ steps.outputs.outputs.containerRegistryName }}
+      containerRegistryLoginServer: ${{ steps.outputs.outputs.containerRegistryLoginServer }}
+      pdfContainerAppName: ${{ steps.outputs.outputs.pdfContainerAppName }}
+      pdfServiceUrl: ${{ steps.outputs.outputs.pdfServiceUrl }}
     steps:
       - uses: actions/checkout@v4
 
@@ -30,12 +34,28 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      - name: Determine PDF container image to preserve
+        id: image
+        run: |
+          PREV_RG=$(az deployment sub show --name "$DEPLOYMENT_NAME" --query properties.outputs.resourceGroupName.value -o tsv 2>/dev/null || true)
+          PREV_APP=$(az deployment sub show --name "$DEPLOYMENT_NAME" --query properties.outputs.pdfContainerAppName.value -o tsv 2>/dev/null || true)
+          CURRENT_IMAGE=""
+          if [ -n "$PREV_RG" ] && [ -n "$PREV_APP" ]; then
+            CURRENT_IMAGE=$(az containerapp show --resource-group "$PREV_RG" --name "$PREV_APP" --query "properties.template.containers[0].image" -o tsv 2>/dev/null || true)
+          fi
+          if [ -z "$CURRENT_IMAGE" ]; then
+            CURRENT_IMAGE="mcr.microsoft.com/azuredocs/containerapps-helloworld:latest"
+          fi
+          echo "Using pdfContainerImage=$CURRENT_IMAGE"
+          echo "image=$CURRENT_IMAGE" >> "$GITHUB_OUTPUT"
+
       - name: Deploy Bicep
         run: |
           az deployment sub create \
             --location "$AZURE_LOCATION" \
             --name "$DEPLOYMENT_NAME" \
-            --template-file infra/main.bicep
+            --template-file infra/main.bicep \
+            --parameters pdfContainerImage="${{ steps.image.outputs.image }}"
 
       - name: Read deployment outputs
         id: outputs
@@ -49,6 +69,10 @@ jobs:
           echo "storageAccountName=$(echo "$outputs" | jq -r .storageAccountName.value)" >> "$GITHUB_OUTPUT"
           echo "functionAppUrl=$(echo "$outputs" | jq -r .functionAppUrl.value)" >> "$GITHUB_OUTPUT"
           echo "functionAppName=$(echo "$outputs" | jq -r .functionAppName.value)" >> "$GITHUB_OUTPUT"
+          echo "containerRegistryName=$(echo "$outputs" | jq -r .containerRegistryName.value)" >> "$GITHUB_OUTPUT"
+          echo "containerRegistryLoginServer=$(echo "$outputs" | jq -r .containerRegistryLoginServer.value)" >> "$GITHUB_OUTPUT"
+          echo "pdfContainerAppName=$(echo "$outputs" | jq -r .pdfContainerAppName.value)" >> "$GITHUB_OUTPUT"
+          echo "pdfServiceUrl=$(echo "$outputs" | jq -r .pdfServiceUrl.value)" >> "$GITHUB_OUTPUT"
 
   deploy-frontend:
     name: Deploy Frontend (App Service)
@@ -128,3 +152,62 @@ jobs:
         with:
           app-name: ${{ env.FUNCTION_APP_NAME }}
           package: functions
+
+  build-and-push-pdf:
+    name: Build & push pdf-service to ACR
+    runs-on: ubuntu-latest
+    needs: deploy-infra
+    outputs:
+      imageTag: ${{ steps.meta.outputs.tag }}
+      imageRef: ${{ steps.meta.outputs.ref }}
+    env:
+      ACR_NAME: ${{ needs.deploy-infra.outputs.containerRegistryName }}
+      ACR_LOGIN_SERVER: ${{ needs.deploy-infra.outputs.containerRegistryLoginServer }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: ACR login
+        run: az acr login --name "$ACR_NAME"
+
+      - name: Compute image tag
+        id: meta
+        run: |
+          tag="${GITHUB_SHA::7}"
+          ref="${ACR_LOGIN_SERVER}/pdf-service:${tag}"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "ref=$ref" >> "$GITHUB_OUTPUT"
+
+      - name: Build & push image
+        run: |
+          docker build \
+            -t "${ACR_LOGIN_SERVER}/pdf-service:${{ steps.meta.outputs.tag }}" \
+            -t "${ACR_LOGIN_SERVER}/pdf-service:latest" \
+            pdf-service
+          docker push "${ACR_LOGIN_SERVER}/pdf-service:${{ steps.meta.outputs.tag }}"
+          docker push "${ACR_LOGIN_SERVER}/pdf-service:latest"
+
+  deploy-pdf-service:
+    name: Deploy pdf-service (Container App)
+    runs-on: ubuntu-latest
+    needs: [deploy-infra, build-and-push-pdf]
+    env:
+      RESOURCE_GROUP: ${{ needs.deploy-infra.outputs.resourceGroupName }}
+      CONTAINER_APP: ${{ needs.deploy-infra.outputs.pdfContainerAppName }}
+      IMAGE_REF: ${{ needs.build-and-push-pdf.outputs.imageRef }}
+    steps:
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Update Container App image
+        run: |
+          az containerapp update \
+            --resource-group "$RESOURCE_GROUP" \
+            --name "$CONTAINER_APP" \
+            --image "$IMAGE_REF"

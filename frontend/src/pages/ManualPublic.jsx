@@ -104,6 +104,17 @@ function ManualPublic() {
 						<p className="mp-header__address">{property.address}</p>
 					</div>
 
+					<div className="mp-header__actions">
+						<a
+							href={api.manuals.pdfUrl(propertyId)}
+							target="_blank"
+							rel="noopener noreferrer"
+							className="mp-pdf-btn"
+						>
+							📄 Descarregar PDF
+						</a>
+					</div>
+
 					<div className="mp-quickinfo">
 						{property.wifiName && (
 							<div className="mp-quickinfo__card">

@@ -168,6 +168,14 @@ function ManualEditor() {
 					<Link to={`/manual/${propertyId}`} className="btn btn--ghost">
 						Pré-visualizar
 					</Link>
+					<a
+						href={api.manuals.pdfUrl(propertyId)}
+						target="_blank"
+						rel="noopener noreferrer"
+						className="btn btn--ghost"
+					>
+						📄 Pré-visualizar PDF
+					</a>
 				</div>
 			</div>
 
