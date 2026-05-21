@@ -39,9 +39,14 @@ app.post('/pdf', async (req, res) => {
 				'--disable-gpu',
 				// Sem estas flags o crashpad_handler do chromium-bookworm aborta com
 				// "chrome_crashpad_handler: --database is required" e o browser não arranca.
+				// (Em Container Apps as anteriores não chegam — o handler é spawned na mesma —
+				// por isso forçamos também o user-data-dir e crash-dumps-dir para /tmp, sempre escrevível.)
 				'--disable-crash-reporter',
 				'--no-crashpad',
 				'--disable-breakpad',
+				'--disable-features=Crashpad',
+				'--user-data-dir=/tmp/chrome-data',
+				'--crash-dumps-dir=/tmp/chrome-dumps',
 			],
 		})
 

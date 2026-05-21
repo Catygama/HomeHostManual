@@ -12,7 +12,10 @@ RUN apt-get update \
 
 ENV PUPPETEER_SKIP_DOWNLOAD=true \
 	PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium \
-	NODE_ENV=production
+	NODE_ENV=production \
+	HOME=/tmp \
+	XDG_CONFIG_HOME=/tmp/.config \
+	XDG_CACHE_HOME=/tmp/.cache
 
 WORKDIR /app
 
@@ -21,8 +24,8 @@ RUN npm ci --omit=dev
 
 COPY server.js ./
 
-# Utilizador não-root
-RUN groupadd -r app && useradd -r -g app -G audio,video app \
+# Utilizador não-root, com home explícito em /tmp (escrevível em qualquer runtime, incl. Container Apps).
+RUN groupadd -r app && useradd -r -g app -G audio,video -d /tmp -s /usr/sbin/nologin app \
 	&& chown -R app:app /app
 USER app
 
