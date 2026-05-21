@@ -22,8 +22,9 @@ var storageAccountName = 'st${projectName}${take(uniqueSuffix, 10)}'
 var appInsightsName = 'ai-${projectName}-${environment}'
 var logAnalyticsName = 'log-${projectName}-${environment}'
 var containerRegistryName = 'acr${projectName}${take(uniqueSuffix, 10)}'
-var containerAppsEnvName = 'cae-${projectName}-${environment}'
-var pdfContainerAppName = 'ca-pdf-${environment}-${take(uniqueSuffix, 6)}'
+// Sufixo `-ne` (northeurope) para não colidir com o `cae-homehost-dev` que ficou em estado Failed em westeurope.
+var containerAppsEnvName = 'cae-${projectName}-${environment}-ne'
+var pdfContainerAppName = 'ca-pdf-${environment}-ne-${take(uniqueSuffix, 6)}'
 
 // Origens permitidas para CORS (localhost do Vite + App Service em produção)
 var allowedOrigins = [
