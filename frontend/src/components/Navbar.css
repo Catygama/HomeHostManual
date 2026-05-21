@@ -62,3 +62,7 @@
 	font-size: 0.9rem;
 	color: var(--text-heading);
 }
+
+@media print {
+	.navbar { display: none; }
+}
