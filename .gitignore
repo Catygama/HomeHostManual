@@ -146,3 +146,8 @@ functions/local.settings.json
 functions/bin
 functions/obj
 .DS_Store
+
+# Documentos internos (não publicar)
+docs/
+enunciado.txt
+Relatório_MiniProjeto_CN_pdf.pdf

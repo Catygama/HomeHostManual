@@ -61,7 +61,7 @@ Plataforma para anfitriões de alojamento local criarem e partilharem manuais di
 
 O frontend só fala com `VITE_FUNCTION_URL` (Function App) via HTTP, com cookies da sessão Easy Auth. Nenhuma credencial de Cosmos ou Storage chega ao browser. Para upload de imagens o frontend pede um SAS token a `POST /api/uploads/sas` e faz o `PUT` direto ao blob — a chave do Storage fica só no Function App.
 
-Para gerar o PDF de um manual, o browser abre `GET /api/manuals/{id}/pdf` no Function App. Esse endpoint valida que a property existe e chama o Container App (`POST /pdf`) por HTTPS interno (URL em `PDF_SERVICE_URL`, app setting). O Container App corre Puppeteer, abre `https://<app-service>/manual/{id}`, espera pelo conteúdo, exporta o PDF em A4 e devolve-o ao Function App, que o faz stream para o browser. Autenticação (Easy Auth) em [`docs/plans/01-easy-auth-microsoft.md`](docs/plans/01-easy-auth-microsoft.md); migração para Functions em [`docs/plans/02-migrate-to-functions.md`](docs/plans/02-migrate-to-functions.md); Docker via ACR em [`docs/plans/03-docker-acr-pdf.md`](docs/plans/03-docker-acr-pdf.md).
+Para gerar o PDF de um manual, o browser abre `GET /api/manuals/{id}/pdf` no Function App. Esse endpoint valida que a property existe e chama o Container App (`POST /pdf`) por HTTPS interno (URL em `PDF_SERVICE_URL`, app setting). O Container App corre Puppeteer, abre `https://<app-service>/manual/{id}`, espera pelo conteúdo, exporta o PDF em A4 e devolve-o ao Function App, que o faz stream para o browser.
 
 ## Estrutura do projeto
 
@@ -71,7 +71,6 @@ Para gerar o PDF de um manual, o browser abre `GET /api/manuals/{id}/pdf` no Fun
 ├── functions/                 # Azure Functions (Node v4)
 ├── pdf-service/               # Container Node + Puppeteer (PDF dos manuais)
 ├── infra/                     # Bicep (main.bicep + resources.bicep)
-├── docs/plans/                # Planos de migração (auth, backend, docker)
 ├── .github/workflows/         # CI/CD
 └── package.json               # Scripts de deploy (root)
 ```
