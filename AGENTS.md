@@ -13,7 +13,7 @@ Guia para agentes de IA que trabalham neste repositório.
 - 🟡 Entrega #2 (17 abr) — funcionalidades em funcionamento
 - ⏳ Entrega #3 (22 maio) — versão final + custos + alternativas europeias
 
-Ver [`docs/STATUS.md`](docs/STATUS.md) para o estado atual detalhado.
+Ver `docs/STATUS.md` para o estado atual detalhado (local, não versionado).
 
 ---
 
@@ -42,7 +42,7 @@ Ver [`docs/STATUS.md`](docs/STATUS.md) para o estado atual detalhado.
 │
 ├── functions/             # Azure Functions (Node v4): health, me, properties, manuals, uploads, public, pdf (proxy)
 │
-├── docs/
+├── docs/                  # local, não versionado (.gitignore)
 │   ├── STATUS.md          # estado do projeto, divergências, próximos passos
 │   └── plans/             # planos de implementação
 │       ├── 01-easy-auth-microsoft.md
@@ -54,8 +54,8 @@ Ver [`docs/STATUS.md`](docs/STATUS.md) para o estado atual detalhado.
 │
 ├── package.json           # scripts de deploy da raiz (deploy, deploy:infra, deploy:frontend, deploy:functions, outputs)
 ├── README.md              # docs operacionais (deploy, env vars, CI/CD, arquitetura)
-├── enunciado.txt          # requisitos da unidade curricular
-└── Relatório_MiniProjeto_CN_pdf.pdf
+├── enunciado.txt          # requisitos da UC (local, não versionado)
+└── Relatório_MiniProjeto_CN_pdf.pdf  # (local, não versionado)
 ```
 
 ---
@@ -109,8 +109,6 @@ Ver [`docs/STATUS.md`](docs/STATUS.md) para o estado atual detalhado.
 - **Container App (PDF)**: `ca-pdf-dev-<suffix>` — FQDN publicado como output `pdfServiceUrl` do Bicep
 - **Resource Group**: `rg-homehost-dev`
 - **Região**: `westeurope`
-
-Subscription: `<subscription-id>` (IPCB).
 
 ---
 
@@ -206,8 +204,8 @@ Entregas avaliativas:
 
 ## Leitura sugerida antes de começar
 
-1. [`enunciado.txt`](enunciado.txt) — requisitos obrigatórios da UC
-2. [`docs/STATUS.md`](docs/STATUS.md) — onde estamos hoje
+1. `enunciado.txt` — requisitos obrigatórios da UC (local, não versionado)
+2. `docs/STATUS.md` — onde estamos hoje (local, não versionado)
 3. [`README.md`](README.md) — como a infra está montada e como fazer deploy
 4. Planos em `docs/plans/`: Plano 1 (auth) feito; seguir Plano 2 (migração API) e depois Plano 3 (Docker)
 
